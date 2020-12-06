@@ -1,3 +1,8 @@
+"""
+this model is based on paper "An adaptive large neighborhood search heuristic for the
+Pollution-Routing Problem", Emrah Demir, Tolga Bektas, Gilbert Laporte
+"""
+
 import math
 
 import gurobipy as gp
