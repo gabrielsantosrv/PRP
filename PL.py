@@ -41,7 +41,9 @@ def constraint_12(model, instance:PRProblem, x_vars):
     _sum = 0
     for j in range(1, len(instance.customers)):
         _sum += x_vars[(0, j)]
-    model.addConstr(_sum == fleet_size, "constraint_12")
+    
+    constraint_12 = "constraint_12_{}".format(j)
+    model.addConstr(_sum == fleet_size, constraint_12)
 
 
 def constraint_13_14(model, instance:PRProblem, x_vars):
@@ -52,9 +54,11 @@ def constraint_13_14(model, instance:PRProblem, x_vars):
             if i != j:
                 _sum1 += x_vars[(i, j)]
                 _sum2 += x_vars[(j, i)]
-
-        model.addConstr(_sum1 == 1, "constraint_13")
-        model.addConstr(_sum2 == 1, "constraint_14")
+        
+        constraint_13 = "constraint_13_{}_{}".format(i, j)
+        constraint_14 = "constraint_14_{}_{}".format(i, j)
+        model.addConstr(_sum1 == 1, constraint_13)
+        model.addConstr(_sum2 == 1, constraint_14)
 
 
 def constraint_15(model, instance:PRProblem, f_vars):
@@ -67,7 +71,9 @@ def constraint_15(model, instance:PRProblem, f_vars):
                 _sum1 += f_vars[(j, i)]
                 _sum2 += f_vars[(i, j)]
 
-        model.addConstr(_sum2 - _sum1 == q, "constraint_15")
+        constraint_15 = "constraint_15_{}_{}".format(i, j)
+        model.addConstr(_sum2 - _sum1 == q, constraint_15)
+
 
 def constraint_16(model, instance: PRProblem,  x_vars, f_vars):
     for i in range(1, len(instance.customers)):
@@ -78,8 +84,11 @@ def constraint_16(model, instance: PRProblem,  x_vars, f_vars):
             q = instance.customers[j]["demand"]
             _sum1 = q * x_vars[(i, j)]
 
-        model.addConstr(_sum1 <= f_vars[(i, j)], "constraint_16")
-        model.addConstr(f_vars[(i, j)] <= (Q - q) * x_vars[(i, j)], "constraint_16")
+        constraint_16_1 = "constraint_16_1_{}_{}".format(i, j)
+        constraint_16_2 = "constraint_16_2_{}_{}".format(i, j)
+        model.addConstr(_sum1 <= f_vars[(i, j)], constraint_16_1)
+        model.addConstr(f_vars[(i, j)] <= (Q - q) * x_vars[(i, j)], constraint_16_2)
+
 
 def constraint_17(model, instance: PRProblem,  y_vars, z_vars, x_vars):
     for i in range(0, len(instance.customers)):
@@ -92,14 +101,20 @@ def constraint_17(model, instance: PRProblem,  y_vars, z_vars, x_vars):
                 for r in range(instance.min_speed, instance.max_speed + 1):
                     _sum += instance.dist[(i, j)] * z_vars[(i, j, r)] / r   
 
-        model.addConstr(_sum <= K*(1 - x_vars[(i, j)]), "constraint_17")
+        constraint_17 = "constraint_17_{}_{}".format(i, j)
+        model.addConstr(_sum <= K*(1 - x_vars[(i, j)]), constraint_17)
+
 
 def constraint_18(model, instance: PRProblem,  y_vars):
     for i in range(1, len(instance.customers)):
         a = instance.customers[i]["ready_time"]
         b = instance.customers[i]["due_time"]
-        model.addConstr(a <= y_vars[i], "constraint_18")
-        model.addConstr(y_vars[i] <= b, "constraint_18")
+
+        constraint_id_18_1 = "constraint_18_1_{}".format(i)
+        constraint_id_18_2 = "constraint_18_2_{}".format(i)
+        model.addConstr(a <= y_vars[i], constraint_id_18_1)
+        model.addConstr(y_vars[i] <= b, constraint_id_18_2)
+
 
 def constraint_19(model, instance: PRProblem,  x_vars, z_vars, y_vars, s_vars):
     L = math.inf
@@ -109,7 +124,8 @@ def constraint_19(model, instance: PRProblem,  x_vars, z_vars, y_vars, s_vars):
         for r in range(instance.min_speed, instance.max_speed + 1):
             _sum += instance.dist[(j, 0)] * z_vars[(j, 0, r)] / r
 
-        model.addConstr(_sum == L*(1 - x_vars[(j, 0)]), "constraint_19")
+        constraint_19 = "constraint_19_{}_{}".format(j, r)
+        model.addConstr(_sum == L*(1 - x_vars[(j, 0)]), constraint_19)
 
 
 def constraint_20(model, instance:PRProblem, x_vars, z_vars):
@@ -120,7 +136,8 @@ def constraint_20(model, instance:PRProblem, x_vars, z_vars):
                 for r in range(instance.min_speed, instance.max_speed + 1):
                     _sum += z_vars[(i, j, r)]
 
-                model.addConstr(_sum == x_vars[(i, j)], "constraint_20")
+                constraint_20 = "constraint_20_{}_{}_{}".format(i, j, r)
+                model.addConstr(_sum == x_vars[(i, j)], constraint_20)
 
 
 def build_model(instance: PRProblem):
