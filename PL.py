@@ -36,15 +36,15 @@ def compute_objective(instance:PRProblem, x_vars, z_vars, f_vars, s_vars):
     return objective
 
 
-def constraint_13(model, instance:PRProblem, x_vars):
+def constraint_12(model, instance:PRProblem, x_vars):
     fleet_size = len(instance.max_payload)
     _sum = 0
     for j in range(1, len(instance.customers)):
         _sum += x_vars[(0, j)]
-    model.addConstr(_sum == fleet_size, "constraint_13")
+    model.addConstr(_sum == fleet_size, "constraint_12")
 
 
-def constraint_14_15(model, instance:PRProblem, x_vars):
+def constraint_13_14(model, instance:PRProblem, x_vars):
     for i in range(1, len(instance.customers)):
         _sum1 = 0
         _sum2 = 0
@@ -53,11 +53,55 @@ def constraint_14_15(model, instance:PRProblem, x_vars):
                 _sum1 += x_vars[(i, j)]
                 _sum2 += x_vars[(j, i)]
 
-        model.addConstr(_sum1 == 1, "constraint_14")
-        model.addConstr(_sum2 == 1, "constraint_15")
+        model.addConstr(_sum1 == 1, "constraint_13")
+        model.addConstr(_sum2 == 1, "constraint_14")
 
 
-def constraint_20(model, instance: PRProblem,  x_vars, z_vars, y_vars, s_vars):
+def constraint_15(model, instance:PRProblem, f_vars):
+    for i in range(1, len(instance.customers)):
+        q = instance.customers[i]["demand"]
+        _sum1 = 0
+        _sum2 = 0
+        for j in range(0, len(instance.customers)):
+            if i != j:
+                _sum1 += f_vars[(j, i)]
+                _sum2 += f_vars[(i, j)]
+
+        model.addConstr(_sum2 - _sum1 == q, "constraint_15")
+
+def constraint_16(model, instance: PRProblem,  x_vars, f_vars):
+    for i in range(1, len(instance.customers)):
+        Q = math.inf
+        _sum1 = 0
+        _sum2 = 0
+        for j in range(1, len(instance.customers)):
+            q = instance.customers[j]["demand"]
+            _sum1 = q * x_vars[(i, j)]
+
+        model.addConstr(_sum1 <= f_vars[(i, j)], "constraint_16")
+        model.addConstr(f_vars[(i, j)] <= (Q - q) * x_vars[(i, j)], "constraint_16")
+
+def constraint_17(model, instance: PRProblem,  y_vars, z_vars, x_vars):
+    for i in range(0, len(instance.customers)):
+        t = instance.customers[i]["service_time"]
+        _sum = 0
+        for j in range(1, len(instance.customers)):
+            if i != j:
+                K = math.inf
+                _sum = y_vars[i] - y_vars[j] + t 
+                for r in range(instance.min_speed, instance.max_speed + 1):
+                    _sum += instance.dist[(i, j)] * z_vars[(i, j, r)] / r   
+
+        model.addConstr(_sum <= K*(1 - x_vars[(i, j)]), "constraint_17")
+
+def constraint_18(model, instance: PRProblem,  y_vars):
+    for i in range(1, len(instance.customers)):
+        a = instance.customers[i]["ready_time"]
+        b = instance.customers[i]["due_time"]
+        model.addConstr(a <= y_vars[i], "constraint_18")
+        model.addConstr(y_vars[i] <= b, "constraint_18")
+
+def constraint_19(model, instance: PRProblem,  x_vars, z_vars, y_vars, s_vars):
     L = math.inf
     for j in range(1, len(instance.customers)):
         t = instance.customers[j]["service_time"]
@@ -65,10 +109,10 @@ def constraint_20(model, instance: PRProblem,  x_vars, z_vars, y_vars, s_vars):
         for r in range(instance.min_speed, instance.max_speed + 1):
             _sum += instance.dist[(j, 0)] * z_vars[(j, 0, r)] / r
 
-        model.addConstr(_sum == L*(1 - x_vars[(j, 0)]), "constraint_20")
+        model.addConstr(_sum == L*(1 - x_vars[(j, 0)]), "constraint_19")
 
 
-def constraint_21(model, instance:PRProblem, x_vars, z_vars):
+def constraint_20(model, instance:PRProblem, x_vars, z_vars):
     for i in range(0, len(instance.customers)):
         for j in range(0, len(instance.customers)):
             if i != j:
@@ -76,7 +120,7 @@ def constraint_21(model, instance:PRProblem, x_vars, z_vars):
                 for r in range(instance.min_speed, instance.max_speed + 1):
                     _sum += z_vars[(i, j, r)]
 
-                model.addConstr(_sum == x_vars[(i, j)], "constraint_21")
+                model.addConstr(_sum == x_vars[(i, j)], "constraint_20")
 
 
 def build_model(instance: PRProblem):
@@ -102,10 +146,10 @@ def build_model(instance: PRProblem):
     model.setObjective(objective, GRB.MINIMIZE)
 
     # adding constraints
-    constraint_13(model, instance, x_vars)
-    constraint_14_15(model, instance, x_vars)
-    constraint_20(model, instance, x_vars, z_vars, y_vars, s_vars)
-    constraint_21(model, instance, x_vars, z_vars)
+    constraint_12(model, instance, x_vars)
+    constraint_13_14(model, instance, x_vars)
+    constraint_19(model, instance, x_vars, z_vars, y_vars, s_vars)
+    constraint_20(model, instance, x_vars, z_vars)
 
 instance = read_instance(inst_name="UK10_01")
 
