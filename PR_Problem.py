@@ -1,4 +1,4 @@
-class PRP:
+class PRProblem:
     def __init__(self, n_customers, max_payload, min_speed, max_speed, dist, customers):
         self.n_customers = n_customers
         self.max_payload = max_payload

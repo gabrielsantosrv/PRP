@@ -1,4 +1,4 @@
-from PRP import PRP
+from PRP.PR_Problem import PRProblem
 
 def read_instance(inst_name):
     with open("instances/{}.txt".format(inst_name)) as file:
@@ -29,4 +29,4 @@ def read_instance(inst_name):
                                   "due_time": float(info[4]),
                                   "service_time": float(info[5])})
 
-    return PRP(n_customers, max_payload, min_speed, max_speed, dist, customers)
+    return PRProblem(n_customers, max_payload, min_speed, max_speed, dist, customers)
