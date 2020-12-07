@@ -165,6 +165,10 @@ def build_model(instance: PRProblem):
     # adding constraints
     constraint_12(model, instance, x_vars)
     constraint_13_14(model, instance, x_vars)
+    constraint_15(model, instance, f_vars)
+    constraint_16(model, instance,  x_vars, f_vars)
+    constraint_17(model, instance,  y_vars, z_vars, x_vars)
+    constraint_18(model, instance,  y_vars)
     constraint_19(model, instance, x_vars, z_vars, y_vars, s_vars)
     constraint_20(model, instance, x_vars, z_vars)
 
