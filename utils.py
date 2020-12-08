@@ -4,7 +4,9 @@ def read_instance(inst_name):
     with open("instances/{}.txt".format(inst_name)) as file:
         n_customers = int(file.readline())
         file.readline()
-        max_payload = [float(payload) for payload in file.readline().split()]
+        curb_payload = file.readline().split()
+        vehicle_curb = float(curb_payload[0])
+        max_payload = float(curb_payload[1])
         file.readline()
         speeds = file.readline().split()
         min_speed = int(speeds[0])
@@ -29,4 +31,4 @@ def read_instance(inst_name):
                                   "due_time": float(info[4]),
                                   "service_time": float(info[5])})
 
-    return PRProblem(n_customers, max_payload, min_speed, max_speed, dist, customers)
+    return PRProblem(n_customers, vehicle_curb, max_payload, min_speed, max_speed, dist, customers)

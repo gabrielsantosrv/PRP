@@ -1,0 +1,8 @@
+name: PollutionRoutingProblem
+dependencies:
+  - python=3.6
+  - matplotlib
+  - pandas
+  - pip:
+    - gurobipy
+
