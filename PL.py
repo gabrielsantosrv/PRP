@@ -2,15 +2,15 @@
 this model is based on paper "An adaptive large neighborhood search heuristic for the
 Pollution-Routing Problem", Emrah Demir, Tolga Bektas, Gilbert Laporte
 """
-
+#%%
 import math
 
 import gurobipy as gp
 from gurobipy import GRB
 
-from PRP.utils import read_instance
-from PRP.constants import *
-from PRP.PR_Problem import PRProblem
+from utils import read_instance
+from constants import *
+from PR_Problem import PRProblem
 
 
 def compute_objective(instance:PRProblem, x_vars, z_vars, f_vars, s_vars):
@@ -20,7 +20,7 @@ def compute_objective(instance:PRProblem, x_vars, z_vars, f_vars, s_vars):
     const4 = BETTA * GAMMA * LAMBDA
 
     objective = 0
-    for i in range(0, len(instance.customers)):
+    for i in range(1, len(instance.customers)):
         for j in range(0, len(instance.customers)):
             if i != j:
                 sum_z = 0
@@ -55,8 +55,8 @@ def constraint_13_14(model, instance:PRProblem, x_vars):
                 _sum1 += x_vars[(i, j)]
                 _sum2 += x_vars[(j, i)]
         
-        constraint_13 = "constraint_13_{}_{}".format(i, j)
-        constraint_14 = "constraint_14_{}_{}".format(i, j)
+        constraint_13 = "constraint_13_{}".format(i)
+        constraint_14 = "constraint_14_{}".format(i)
         model.addConstr(_sum1 == 1, constraint_13)
         model.addConstr(_sum2 == 1, constraint_14)
 
@@ -71,38 +71,40 @@ def constraint_15(model, instance:PRProblem, f_vars):
                 _sum1 += f_vars[(j, i)]
                 _sum2 += f_vars[(i, j)]
 
-        constraint_15 = "constraint_15_{}_{}".format(i, j)
+        constraint_15 = "constraint_15_{}".format(i)
         model.addConstr(_sum2 - _sum1 == q, constraint_15)
 
 
 def constraint_16(model, instance: PRProblem,  x_vars, f_vars):
     for i in range(1, len(instance.customers)):
-        Q = math.inf
+        Q = 10**9
+        q = 0
         _sum1 = 0
-        _sum2 = 0
         for j in range(1, len(instance.customers)):
             q = instance.customers[j]["demand"]
-            _sum1 = q * x_vars[(i, j)]
+            if i != j:
+                _sum1 = q * x_vars[(i, j)]
 
-        constraint_16_1 = "constraint_16_1_{}_{}".format(i, j)
-        constraint_16_2 = "constraint_16_2_{}_{}".format(i, j)
-        model.addConstr(_sum1 <= f_vars[(i, j)], constraint_16_1)
-        model.addConstr(f_vars[(i, j)] <= (Q - q) * x_vars[(i, j)], constraint_16_2)
+                constraint_16_1 = "constraint_16_1_{}_{}".format(i, j)
+                constraint_16_2 = "constraint_16_2_{}_{}".format(i, j)
+                model.addConstr(_sum1 <= f_vars[(i, j)], constraint_16_1)
+                model.addConstr(f_vars[(i, j)] <= (Q - q) * x_vars[(i, j)], constraint_16_2)
 
 
 def constraint_17(model, instance: PRProblem,  y_vars, z_vars, x_vars):
-    for i in range(0, len(instance.customers)):
+    K = 10**9
+    for i in range(1, len(instance.customers)):
         t = instance.customers[i]["service_time"]
         _sum = 0
         for j in range(1, len(instance.customers)):
             if i != j:
-                K = math.inf
                 _sum = y_vars[i] - y_vars[j] + t 
                 for r in range(instance.min_speed, instance.max_speed + 1):
                     _sum += instance.dist[(i, j)] * z_vars[(i, j, r)] / r   
 
-        constraint_17 = "constraint_17_{}_{}".format(i, j)
-        model.addConstr(_sum <= K*(1 - x_vars[(i, j)]), constraint_17)
+                mult = K*(1 - x_vars[(i, j)])
+                constraint_17 = "constraint_17_{}_{}".format(i, j)
+                model.addConstr(_sum <= mult, constraint_17)
 
 
 def constraint_18(model, instance: PRProblem,  y_vars):
@@ -117,14 +119,14 @@ def constraint_18(model, instance: PRProblem,  y_vars):
 
 
 def constraint_19(model, instance: PRProblem,  x_vars, z_vars, y_vars, s_vars):
-    L = math.inf
+    L = 10**9
     for j in range(1, len(instance.customers)):
         t = instance.customers[j]["service_time"]
         _sum = y_vars[j] + t - s_vars[j]
         for r in range(instance.min_speed, instance.max_speed + 1):
             _sum += instance.dist[(j, 0)] * z_vars[(j, 0, r)] / r
 
-        constraint_19 = "constraint_19_{}_{}".format(j, r)
+        constraint_19 = "constraint_19_{}".format(j)
         model.addConstr(_sum == L*(1 - x_vars[(j, 0)]), constraint_19)
 
 
@@ -148,6 +150,7 @@ def build_model(instance: PRProblem):
     f_vars = {}
     y_vars = {}
     s_vars = {}
+
     for i in range(0, len(instance.customers)):
         if i > 0:
             y_vars[i] = model.addVar(vtype=GRB.CONTINUOUS, lb=0, name="y_{}".format(i))
@@ -172,5 +175,8 @@ def build_model(instance: PRProblem):
     constraint_19(model, instance, x_vars, z_vars, y_vars, s_vars)
     constraint_20(model, instance, x_vars, z_vars)
 
-instance = read_instance(inst_name="UK10_01")
+    model.setParam(GRB.Param.IntFeasTol, 10**-4)
+    model.optimize()
 
+instance = read_instance(inst_name="UK10_01")
+build_model(instance)

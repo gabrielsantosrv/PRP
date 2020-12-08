@@ -1,4 +1,4 @@
-from PRP.PR_Problem import PRProblem
+from PR_Problem import PRProblem
 
 def read_instance(inst_name):
     with open("instances/{}.txt".format(inst_name)) as file:
