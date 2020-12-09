@@ -4,6 +4,7 @@ Pollution-Routing Problem", Emrah Demir, Tolga Bektas, Gilbert Laporte
 """
 import gurobipy as gp
 from gurobipy import GRB
+import pandas as pd
 
 from utils import read_instance
 from constants import *
@@ -210,6 +211,9 @@ def build_model(instance: PRProblem):
 
     return model
 
+def save_results_CSV(lower_bounds:list, upper_bounds:list, times:list, filepath):
+    df = pd.DataFrame({'time':times, 'lower_bounds':lower_bounds, 'upper_bounds':upper_bounds})
+    df.to_csv(filepath)
 
 if __name__ == '__main__':
     instance = read_instance(inst_name="UK10_01")
