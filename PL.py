@@ -216,10 +216,27 @@ def save_results_CSV(lower_bounds:list, upper_bounds:list, times:list, filepath)
     df.to_csv(filepath)
 
 if __name__ == '__main__':
-    instance = read_instance(inst_name="UK10_01")
-    instance.fleet_size = 2
+    lower_bounds = []
+    upper_bounds = []
+    times = []
 
-    model = build_model(instance)
-    model.setParam('TimeLimit', 200)
-    model.optimize()
-    print('Final Objective: {}'.format(model.objVal))
+    for i in range(1, 21):
+        if i < 10:
+            instance_name = "{}{}".format("UK10_0", i)
+        else:
+            instance_name = "{}{}".format("UK10_", i)
+
+        instance = read_instance(inst_name=instance_name)
+        instance.fleet_size = 2
+
+        model = build_model(instance)
+        model.setParam('TimeLimit', 1800)
+        model.optimize()
+        print('Final Objective: {}'.format(model.objVal))
+
+        lower_bounds.append(model.objBound)
+        upper_bounds.append(model.objVal)
+        times.append(model.runtime)
+
+    filepath = "/Users/lumagabino/Backup/Graduação/MO824/PRP/results.csv"
+    save_results_CSV(lower_bounds, upper_bounds, times, filepath)
