@@ -5,6 +5,8 @@ Pollution-Routing Problem", Emrah Demir, Tolga Bektas, Gilbert Laporte
 import gurobipy as gp
 from gurobipy import GRB
 import pandas as pd
+import random
+import math
 
 from utils import read_instance
 from constants import *
@@ -15,9 +17,10 @@ L = 10**9
 
 def compute_objective(instance:PRProblem, x_vars, z_vars, f_vars, s_vars):
     const1 = FRICTION_FACTOR * ENGINE_SPEED * ENGINE_DISPLACEMENT * LAMBDA
-    const2 = CURB_WEIGHT * GAMMA * LAMBDA * ALPHA
-    const3 = GAMMA * LAMBDA * ALPHA
+    const2 = CURB_WEIGHT * GAMMA * LAMBDA
+    const3 = GAMMA * LAMBDA
     const4 = BETTA * GAMMA * LAMBDA
+    alphas = genarateRandomAlphaMatrix()
 
     objective = 0
     for i in range(0, len(instance.customers)):
@@ -29,8 +32,8 @@ def compute_objective(instance:PRProblem, x_vars, z_vars, f_vars, s_vars):
                     sum_z += z_vars[(i, j, r)] / r
                     sum_z2 += z_vars[(i, j, r)] * (r ** 2)
                 objective += const1 * instance.dist[(i, j)] * sum_z
-                objective += const2 * instance.dist[(i, j)] * x_vars[(i, j)]
-                objective += const3 * instance.dist[(i, j)] * f_vars[(i, j)]
+                objective += const2 * alphas[(i, j)] * instance.dist[(i, j)] * x_vars[(i, j)]
+                objective += const3 * alphas[(i, j)] * instance.dist[(i, j)] * f_vars[(i, j)]
                 objective += const4 * instance.dist[(i, j)] * sum_z2
         if i > 0:
             objective += DRIVER_COST * s_vars[i]
@@ -210,6 +213,16 @@ def build_model(instance: PRProblem):
     constraint_20(model, instance, x_vars, z_vars)
 
     return model
+
+def genarateRandomAlphaMatrix():
+    alphas = {}
+
+    for i in range(0, len(instance.customers)):
+        for j in range(0, len(instance.customers)):
+            randomDegree = random.uniform(0, 0.0523)
+            alphas[(i, j)] = GRAVITY * (math.sin(randomDegree) + ROLLING_RESISTANCE * math.cosh(randomDegree))
+
+    return alphas
 
 def save_results_CSV(lower_bounds:list, upper_bounds:list, times:list, filepath):
     df = pd.DataFrame({'time':times, 'lower_bounds':lower_bounds, 'upper_bounds':upper_bounds})
