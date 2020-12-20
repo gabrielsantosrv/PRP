@@ -220,7 +220,7 @@ def genarateRandomAlphaMatrix():
     for i in range(0, len(instance.customers)):
         for j in range(0, len(instance.customers)):
             randomDegree = random.uniform(0, 0.0523)
-            alphas[(i, j)] = GRAVITY * (math.sin(randomDegree) + ROLLING_RESISTANCE * math.cosh(randomDegree))
+            alphas[(i, j)] = GRAVITY * (math.sin(randomDegree) + ROLLING_RESISTANCE * math.cos(randomDegree))
 
     return alphas
 
@@ -229,6 +229,7 @@ def save_results_CSV(lower_bounds:list, upper_bounds:list, times:list, filepath)
     df.to_csv(filepath)
 
 if __name__ == '__main__':
+    random.seed(42)
     lower_bounds = []
     upper_bounds = []
     times = []
