@@ -219,8 +219,8 @@ def genarateRandomAlphaMatrix():
 
     for i in range(0, len(instance.customers)):
         for j in range(0, len(instance.customers)):
-            randomDegree = random.uniform(0, 0.0523)
-            alphas[(i, j)] = GRAVITY * (math.sin(randomDegree) + ROLLING_RESISTANCE * math.cos(randomDegree))
+            fixedDegree = 0.0107459922
+            alphas[(i, j)] = GRAVITY * (math.sin(fixedDegree) + ROLLING_RESISTANCE * math.cos(fixedDegree))
 
     return alphas
 
