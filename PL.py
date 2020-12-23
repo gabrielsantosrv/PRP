@@ -195,7 +195,7 @@ def build_model(instance: PRProblem):
                 f_vars[(i, j)] = model.addVar(vtype=GRB.CONTINUOUS, lb=0, name="f_{}_{}".format(i, j))
                 for r in range(instance.min_speed, instance.max_speed + 1):
                     z_vars[(i, j, r)] = model.addVar(vtype=GRB.BINARY, name="z_{}_{}_{}".format(i, j, r))
-
+    instance.fleet_size = model.addVar(vtype=GRB.INTEGER, lb=0, name="m")
     objective = compute_objective(instance, x_vars, z_vars, f_vars, s_vars)
     model.setObjective(objective, GRB.MINIMIZE)
 
@@ -224,8 +224,8 @@ def genarateRandomAlphaMatrix():
 
     return alphas
 
-def save_results_CSV(lower_bounds:list, upper_bounds:list, times:list, filepath):
-    df = pd.DataFrame({'time':times, 'lower_bounds':lower_bounds, 'upper_bounds':upper_bounds})
+def save_results_CSV(lower_bounds:list, upper_bounds:list, times:list, fleet_sizes:list, filepath):
+    df = pd.DataFrame({'time':times, 'lower_bounds':lower_bounds, 'upper_bounds':upper_bounds, 'fleet size':fleet_sizes})
     df.to_csv(filepath)
 
 if __name__ == '__main__':
@@ -233,6 +233,7 @@ if __name__ == '__main__':
     lower_bounds = []
     upper_bounds = []
     times = []
+    fleet_sizes = []
 
     for i in range(1, 21):
         if i < 10:
@@ -241,16 +242,19 @@ if __name__ == '__main__':
             instance_name = "{}{}".format("UK10_", i)
 
         instance = read_instance(inst_name=instance_name)
-        instance.fleet_size = 2
 
         model = build_model(instance)
         model.setParam('TimeLimit', 1800)
         model.optimize()
         print('Final Objective: {}'.format(model.objVal))
+        for v in model.getVars():
+            if v.varName == "m":
+                print('Fleet size: %g' % (v.x))
+                fleet_sizes.append(v.x)
 
         lower_bounds.append(model.objBound)
         upper_bounds.append(model.objVal)
         times.append(model.runtime)
 
     filepath = "/Users/lumagabino/Backup/Graduação/MO824/PRP/results.csv"
-    save_results_CSV(lower_bounds, upper_bounds, times, filepath)
+    save_results_CSV(lower_bounds, upper_bounds, times, fleet_sizes, filepath)
