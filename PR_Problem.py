@@ -1,6 +1,6 @@
 class PRProblem:
     def __init__(self, n_customers, vehicle_curb, max_payload, min_speed, max_speed, dist, customers,
-                 fleet_size=None):
+                 fleet_size=2):
         self.n_customers = n_customers
         self.vehicle_curb = vehicle_curb
         self.max_payload = max_payload
