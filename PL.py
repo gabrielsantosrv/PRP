@@ -9,7 +9,7 @@ import random
 import math
 
 from utils import read_instance
-from constants import *
+from model_constants import *
 from PR_Problem import PRProblem
 
 K = 10**9
