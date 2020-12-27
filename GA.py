@@ -192,7 +192,7 @@ class PRP_Genetic:
         is_mutated = False
         for i in range(n):
             if random.random() < speed_mutation_rate:
-                _chromosome[i] = random.randint(self.prp.min_speed, self.prp.max_speed)
+                _chromosome[i][1] = random.randint(self.prp.min_speed, self.prp.max_speed)
                 is_mutated = True
 
             if random.random() < mutation_rate:
@@ -204,13 +204,13 @@ class PRP_Genetic:
                 _chromosome = chromosome[0:start] + chromosome_mid + chromosome[end:]
                 is_mutated = True
 
-        if is_mutated:
-            # TODO: Caso ocorrer uma mutação, atribuimos valores aleatórios para a velocidade do separador
-            routes = self.split_route(_chromosome)
-            _chromosome = []
-            for route in routes:
-                speed_sep = random.randint(self.prp.min_speed, self.prp.max_speed)
-                _chromosome += route + [[SEPARATOR, speed_sep]]
+        # if is_mutated:
+        # TODO: Caso ocorrer uma mutação, atribuimos valores aleatórios para a velocidade do separador
+        routes = self.split_route(_chromosome)
+        _chromosome = []
+        for route in routes:
+            speed_sep = random.randint(self.prp.min_speed, self.prp.max_speed)
+            _chromosome += route + [[SEPARATOR, speed_sep]]
 
         return _chromosome
 
@@ -252,8 +252,14 @@ class PRP_Genetic:
         for i in range(index1, index2):
             child1[i] = parent1[i]
             child2[i] = parent2[i]
-            parent1_aux.remove(parent2[i])
-            parent2_aux.remove(parent1[i])
+            for j in range(0, len(parent1_aux)):
+                if parent1_aux[j][0] == parent2[i][0]:
+                    parent1_aux.remove(parent1_aux[j])
+                    break
+            for j in range(0, len(parent2_aux)):
+                if parent2_aux[j][0] == parent1[i][0]:
+                    parent2_aux.remove(parent2_aux[j])
+                    break
 
         for i in range(0, len(parent1_aux)):
             if i < index1:
@@ -296,13 +302,24 @@ class PRP_Genetic:
                 current_payload += self.prp.customers[customer]['demand']
 
         return total_payloads
+    
+# k,opt,ngen,size,ratio_cross,prob_mutate
+def genetic_algorithm_solver(instance, population_size, k_tournament, ngen, ratio_cross, mutation_rate, speed_mutation_rate):
+    prp = PRP_Genetic(instance)
+    population = prp.generate_initial_population(population_size)
+    n_parents = round(population_size * ratio_cross)
+    n_parents = (n_parents if n_parents % 2 == 0 else n_parents - 1)
 
+    for _ in range(0,ngen):
+        population = prp.generate_next_population(population, n_parents, k_tournament, mutation_rate, speed_mutation_rate)
+        bestChromossome = min(population, key=prp.fitness)
+        print(bestChromossome)
+        print(prp.fitness(bestChromossome))
 
 if __name__ == '__main__':
     random.seed(42)
     instance_name = "UK10_01"
     instance = read_instance(inst_name=instance_name)
-    prp = PRP_Genetic(instance)
-    chromosome = prp.generate_chromosome()
-    print(chromosome)
-    print(prp.fitness(chromosome))
+
+    genetic_algorithm_solver(instance, population_size=100, k_tournament=2, ngen=200, ratio_cross=0.8, mutation_rate=0.05, speed_mutation_rate=0.05)
+
