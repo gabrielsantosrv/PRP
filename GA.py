@@ -323,6 +323,7 @@ def genetic_algorithm_solver(instance, population_size, k_tournament, ngen, rati
     for n in range(0, ngen):
         population = prp.generate_next_population(population, n_parents, k_tournament, mutation_rate,
                                                   speed_mutation_rate)
+
         best_chromosome = min(population, key=prp.fitness)
 
         fitness_score = prp.fitness(best_chromosome)
@@ -333,7 +334,7 @@ def genetic_algorithm_solver(instance, population_size, k_tournament, ngen, rati
         if (end - start) >= time_limit:
             break
 
-    return fitness_scores, prp.split_route(best_chromosome)
+    return fitness_scores, best_chromosome
 
 
 def plot_metrics(scores, filepath=None):
@@ -351,16 +352,12 @@ def plot_metrics(scores, filepath=None):
     else:
         plt.savefig(filepath)
 
-def save_results_CSV(result:list, times:list, fleet_sizes:list, filepath):
-    df = pd.DataFrame({'time':times, 'result':result, 'fleet size':fleet_sizes})
-    df.to_csv(filepath)
-
 
 if __name__ == '__main__':
     random.seed(42)
     results = {'time': [], 'result': [], 'fleet size': []}
 
-    for i in range(1, 21):
+    for i in range(1, 2):
         if i < 10:
             instance_name = "{}{}".format("UK10_0", i)
         else:
@@ -368,14 +365,16 @@ if __name__ == '__main__':
 
         instance = read_instance(inst_name=instance_name)
         start = time.time()
-        fitness_scores, routes = genetic_algorithm_solver(instance, population_size=100, k_tournament=2, ngen=1000,
+        fitness_scores, best_chromosome = genetic_algorithm_solver(instance, population_size=100, k_tournament=2, ngen=1000,
                                                           ratio_cross=0.85, mutation_rate=0.95, speed_mutation_rate=0.05)
+        n_routes = sum([1 for item in best_chromosome if item[0] == -1])
+        # plot_metrics(fitness_scores)
         end = time.time()
         min_fit = min(fitness_scores)
 
         results['result'].append(min_fit)
         results['time'].append((end-start))
-        results['fleet size'].append(len(routes))
+        results['fleet size'].append(n_routes)
 
     df = pd.DataFrame(results)
     df.to_csv('ga_results.csv')
