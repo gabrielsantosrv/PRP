@@ -1,10 +1,14 @@
 import copy
+import time
 
 from PR_Problem import PRProblem
 from model_constants import *
 from utils import read_instance
 import random
 from random import randrange
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 SEPARATOR = -1
 
@@ -61,6 +65,8 @@ class PRP_Genetic:
             child1, child2 = self.crossover(parent1, parent2)
             child1 = self.mutate(child1, mutation_rate=mutation_rate, speed_mutation_rate=speed_mutation_rate)
             child2 = self.mutate(child2, mutation_rate=mutation_rate, speed_mutation_rate=speed_mutation_rate)
+            child1 = self.add_separator(child1)
+            child2 = self.add_separator(child2)
             new_children.append(child1)
             new_children.append(child2)
 
@@ -204,15 +210,16 @@ class PRP_Genetic:
                 _chromosome = chromosome[0:start] + chromosome_mid + chromosome[end:]
                 is_mutated = True
 
-        # if is_mutated:
+        return _chromosome
+
+    def add_separator(self, chromosome):
         # TODO: Caso ocorrer uma mutação, atribuimos valores aleatórios para a velocidade do separador
-        routes = self.split_route(_chromosome)
-        _chromosome = []
+        routes = self.split_route(chromosome)
+        chromosome = []
         for route in routes:
             speed_sep = random.randint(self.prp.min_speed, self.prp.max_speed)
-            _chromosome += route + [[SEPARATOR, speed_sep]]
-
-        return _chromosome
+            chromosome += route + [[SEPARATOR, speed_sep]]
+        return chromosome
 
     def crossover(self, parent1, parent2):
         """
@@ -302,24 +309,74 @@ class PRP_Genetic:
                 current_payload += self.prp.customers[customer]['demand']
 
         return total_payloads
-    
-# k,opt,ngen,size,ratio_cross,prob_mutate
-def genetic_algorithm_solver(instance, population_size, k_tournament, ngen, ratio_cross, mutation_rate, speed_mutation_rate):
+
+
+def genetic_algorithm_solver(instance, population_size, k_tournament, ngen, ratio_cross,
+                             mutation_rate, speed_mutation_rate, time_limit=600):
     prp = PRP_Genetic(instance)
     population = prp.generate_initial_population(population_size)
     n_parents = round(population_size * ratio_cross)
     n_parents = (n_parents if n_parents % 2 == 0 else n_parents - 1)
 
-    for _ in range(0,ngen):
-        population = prp.generate_next_population(population, n_parents, k_tournament, mutation_rate, speed_mutation_rate)
-        bestChromossome = min(population, key=prp.fitness)
-        print(bestChromossome)
-        print(prp.fitness(bestChromossome))
+    start = time.time()
+    fitness_scores = []
+    for n in range(0, ngen):
+        population = prp.generate_next_population(population, n_parents, k_tournament, mutation_rate,
+                                                  speed_mutation_rate)
+        best_chromosome = min(population, key=prp.fitness)
+
+        fitness_score = prp.fitness(best_chromosome)
+        print("Generation", n, "Best Fitness", fitness_score)
+        fitness_scores.append(fitness_score)
+
+        end = time.time()
+        if (end - start) >= time_limit:
+            break
+
+    return fitness_scores, prp.split_route(best_chromosome)
+
+
+def plot_metrics(scores, filepath=None):
+    formatted_dict = {'Generations': [],
+                      'Fitness Scores': [], }
+
+    for i, score in enumerate(scores):
+        formatted_dict['Generations'].append(i)
+        formatted_dict['Fitness Scores'].append(score)
+
+    df_metrics = pd.DataFrame(formatted_dict)
+    sns.lineplot(data=df_metrics, x='Generations', y='Fitness Scores')
+    if filepath is None:
+        plt.show()
+    else:
+        plt.savefig(filepath)
+
+def save_results_CSV(result:list, times:list, fleet_sizes:list, filepath):
+    df = pd.DataFrame({'time':times, 'result':result, 'fleet size':fleet_sizes})
+    df.to_csv(filepath)
+
 
 if __name__ == '__main__':
     random.seed(42)
-    instance_name = "UK10_01"
-    instance = read_instance(inst_name=instance_name)
+    results = {'time': [], 'result': [], 'fleet size': []}
 
-    genetic_algorithm_solver(instance, population_size=100, k_tournament=2, ngen=200, ratio_cross=0.8, mutation_rate=0.05, speed_mutation_rate=0.05)
+    for i in range(1, 21):
+        if i < 10:
+            instance_name = "{}{}".format("UK10_0", i)
+        else:
+            instance_name = "{}{}".format("UK10_", i)
 
+        instance = read_instance(inst_name=instance_name)
+        start = time.time()
+        fitness_scores, routes = genetic_algorithm_solver(instance, population_size=100, k_tournament=2, ngen=1000,
+                                                          ratio_cross=0.85, mutation_rate=0.95, speed_mutation_rate=0.05)
+        end = time.time()
+        min_fit = min(fitness_scores)
+
+        results['result'].append(min_fit)
+        results['time'].append((end-start))
+        results['fleet size'].append(len(routes))
+
+    df = pd.DataFrame(results)
+    df.to_csv('ga_results.csv')
+    # plot_metrics(fitness_scores)
