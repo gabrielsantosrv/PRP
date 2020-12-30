@@ -45,8 +45,8 @@ class PRP_Genetic:
         """
         return [self.generate_chromosome() for _ in range(population_size)]
 
-    def generate_next_population(self, current_population, route_mutation_rate, speed_mutation_rate, 
-                                 mantain_diversity=False, is_elitist=False):
+    def generate_next_population(self, current_population, crossover_rate, route_mutation_rate, speed_mutation_rate,
+                                 selection_method, elitism_rate=0.0, maintain_diversity=False):
         """
 
         :param current_population: the current population
@@ -58,34 +58,46 @@ class PRP_Genetic:
         """
         n_parents = len(current_population)
         new_children = []
-        if is_elitist:            
-            best_chromosome = sorted(current_population, key=self.fitness)[0]
-            n_parents -= 1
-            new_children = [best_chromosome]
-            
+
+        n_elitism = round(elitism_rate*n_parents)
+        best_chromosomes = sorted(current_population, key=self.fitness)[:n_elitism]
+        new_children.extend(best_chromosomes)
+        n_parents -= n_elitism
         n_parents = (n_parents if n_parents % 2 == 0 else n_parents - 1)
-        parents = self.tournament_selection(current_population, n_parents)    
+
+        parents = selection_method(current_population, n_parents)
         random.shuffle(parents)
         for i in range(0, n_parents, 2):
             parent1 = parents[i]
             parent2 = parents[i + 1]
-            if mantain_diversity:
+            if maintain_diversity:
                 is_new = False
                 while not is_new:
-                    child1, child2 = self.mate(route_mutation_rate, parent1, parent2, speed_mutation_rate)
+                    child1, child2 = self.mate(parent1, parent2, crossover_rate, route_mutation_rate, speed_mutation_rate)
                     curr_pop = new_children + parents
                     if child1 not in curr_pop and child2 not in curr_pop:
                         is_new = True
             else:
-                child1, child2 = self.mate(route_mutation_rate, parent1, parent2, speed_mutation_rate)
+                child1, child2 = self.mate(parent1, parent2, crossover_rate, route_mutation_rate, speed_mutation_rate)
 
             new_children.append(child1)
             new_children.append(child2)
 
         return new_children
 
-    def mate(self, route_mutation_rate, parent1, parent2, speed_mutation_rate):
-        child1, child2 = self.crossover(parent1, parent2)
+    def mate(self, parent1, parent2, crossover_rate, route_mutation_rate, speed_mutation_rate):
+        parent1 = copy.deepcopy(parent1)
+        parent2 = copy.deepcopy(parent2)
+
+        # remove separators, turning the VRP representation into TSP representation
+        parent1 = [x for x in parent1 if x[0] != SEPARATOR]
+        parent2 = [x for x in parent2 if x[0] != SEPARATOR]
+
+        if random.random() < crossover_rate:
+            child1, child2 = self.crossover(parent1, parent2)
+        else:
+            child1, child2 = parent1, parent2
+
         child1 = self.mutate(child1, mutation_rate=route_mutation_rate, speed_mutation_rate=speed_mutation_rate)
         child2 = self.mutate(child2, mutation_rate=route_mutation_rate, speed_mutation_rate=speed_mutation_rate)
         child1 = self.add_separator(child1)
@@ -286,12 +298,6 @@ class PRP_Genetic:
         :param parent2: array representing a route
         :return: the newly generated children
         """
-        parent1 = copy.deepcopy(parent1)
-        parent2 = copy.deepcopy(parent2)
-
-        # remove separators, turning the VRP representation into TSP representation
-        parent1 = [x for x in parent1 if x[0] != SEPARATOR]
-        parent2 = [x for x in parent2 if x[0] != SEPARATOR]
         route_size = len(parent1)
         parent1_aux = copy.deepcopy(parent1)
         parent2_aux = copy.deepcopy(parent2)
@@ -358,28 +364,38 @@ class PRP_Genetic:
         return total_payloads
 
 
-def genetic_algorithm_solver(instance, population_size, ngen, crossover_rate_decay,
-                             mutation_rate_decay, speed_mutation_rate, time_limit=600,
-                             maintain_diversity=False):
-    prp = PRP_Genetic(instance)
+def genetic_algorithm_solver(prp, population_size, ngen,
+                             crossover_rate_decay,
+                             mutation_rate_decay,
+                             speed_mutation_rate,
+                             selection_method,
+                             time_limit=600,
+                             maintain_diversity=False,
+                             elitism_rate=0.0):
     population = prp.generate_initial_population(population_size)
 
     start = time.time()
     fitness_scores = []
-    mutation_rate = 1
+    route_mutation_rate = 1
     crossover_rate = 1
     for n in range(0, ngen):
         best_chromosome = min(population, key=prp.fitness)
         fitness_score = prp.fitness(best_chromosome)
-        print("Generation", n, "Best Fitness", fitness_score)
         fitness_scores.append(fitness_score)
+        print("Generation", n, "Best Fitness", fitness_score)
 
-        population = prp.generate_next_population(population, mutation_rate,
-                                                  speed_mutation_rate, maintain_diversity,
-                                                  is_elitist=True)
+        population = prp.generate_next_population(current_population=population,
+                                                  crossover_rate=crossover_rate,
+                                                  route_mutation_rate=route_mutation_rate,
+                                                  speed_mutation_rate=speed_mutation_rate,
+                                                  elitism_rate=elitism_rate,
+                                                  maintain_diversity=maintain_diversity,
+                                                  selection_method=selection_method)
 
-        mutation_rate -= mutation_rate_decay
+        route_mutation_rate -= mutation_rate_decay
         crossover_rate *= crossover_rate_decay
+
+        # Time Limit
         end = time.time()
         if (end - start) >= time_limit:
             break
@@ -414,13 +430,22 @@ if __name__ == '__main__':
             instance_name = "{}{}".format("UK10_", i)
 
         instance = read_instance(inst_name=instance_name)
+        prp = PRP_Genetic(instance)
+
         start = time.time()
-        fitness_scores, best_chromosome = genetic_algorithm_solver(instance, population_size=100, ngen=1000,
-                                                                   crossover_rate_decay=0.99, mutation_rate_decay=0.85/1000,
-                                                                   speed_mutation_rate=0.25, maintain_diversity=False)
+        fitness_scores, best_chromosome = genetic_algorithm_solver(prp,
+                                                                   population_size=100,
+                                                                   ngen=1000,
+                                                                   crossover_rate_decay=1,
+                                                                   mutation_rate_decay=0,
+                                                                   speed_mutation_rate=0.22,
+                                                                   elitism_rate=15/100,
+                                                                   maintain_diversity=False,
+                                                                   selection_method=prp.tournament_selection)
         n_routes = sum([1 for item in best_chromosome if item[0] == -1])
         print(best_chromosome)
         plot_metrics(fitness_scores)
+
     #     end = time.time()
     #     min_fit = min(fitness_scores)
     #
