@@ -45,51 +45,52 @@ class PRP_Genetic:
         """
         return [self.generate_chromosome() for _ in range(population_size)]
 
-    def generate_next_population(self, current_population, n_chromosomes,
-                                 mutation_rate, speed_mutation_rate, mantain_diversity):
+    def generate_next_population(self, current_population, route_mutation_rate, speed_mutation_rate, 
+                                 mantain_diversity=False, is_elitist=False):
         """
 
         :param current_population: the current population
         :param n_chromosomes: the number of individuals selected from tournament
         :param k_tournament: the number of individuals involved in the tournament
-        :param mutation_rate: route mutation rate, a real number in the interval [0,1]
+        :param route_mutation_rate: route mutation rate, a real number in the interval [0,1]
         :param speed_mutation_rate:  speed mutation rate, a real number in the interval [0,1]
         :return: new population
         """
-        winner_chromosomes = self.tournament_selection(current_population, n_chromosomes)
-        best_chromosome = sorted(current_population, key=self.fitness)[0]
-        winner_chromosomes.append(best_chromosome)
-
+        n_parents = len(current_population)
         new_children = []
-        qtd_new_children = len(current_population) - n_chromosomes - 1
-        random.shuffle(current_population)
-        for i in range(0, qtd_new_children, 2):
-            parent1 = current_population[i]
-            parent2 = current_population[i + 1]
+        if is_elitist:            
+            best_chromosome = sorted(current_population, key=self.fitness)[0]
+            n_parents -= 1
+            new_children = [best_chromosome]
+            
+        n_parents = (n_parents if n_parents % 2 == 0 else n_parents - 1)
+        parents = self.tournament_selection(current_population, n_parents)    
+        random.shuffle(parents)
+        for i in range(0, n_parents, 2):
+            parent1 = parents[i]
+            parent2 = parents[i + 1]
             if mantain_diversity:
                 is_new = False
                 while not is_new:
-                    child1, child2 = self.crossover(parent1, parent2)
-                    child1 = self.mutate(child1, mutation_rate=mutation_rate, speed_mutation_rate=speed_mutation_rate)
-                    child2 = self.mutate(child2, mutation_rate=mutation_rate, speed_mutation_rate=speed_mutation_rate)
-                    child1 = self.add_separator(child1)
-                    child2 = self.add_separator(child2)
-
-                    curr_pop = new_children + winner_chromosomes
+                    child1, child2 = self.mate(route_mutation_rate, parent1, parent2, speed_mutation_rate)
+                    curr_pop = new_children + parents
                     if child1 not in curr_pop and child2 not in curr_pop:
                         is_new = True
             else:
-                child1, child2 = self.crossover(parent1, parent2)
-                child1 = self.mutate(child1, mutation_rate=mutation_rate, speed_mutation_rate=speed_mutation_rate)
-                child2 = self.mutate(child2, mutation_rate=mutation_rate, speed_mutation_rate=speed_mutation_rate)
-                child1 = self.add_separator(child1)
-                child2 = self.add_separator(child2)
+                child1, child2 = self.mate(route_mutation_rate, parent1, parent2, speed_mutation_rate)
 
             new_children.append(child1)
             new_children.append(child2)
 
-        return new_children + winner_chromosomes
+        return new_children
 
+    def mate(self, route_mutation_rate, parent1, parent2, speed_mutation_rate):
+        child1, child2 = self.crossover(parent1, parent2)
+        child1 = self.mutate(child1, mutation_rate=route_mutation_rate, speed_mutation_rate=speed_mutation_rate)
+        child2 = self.mutate(child2, mutation_rate=route_mutation_rate, speed_mutation_rate=speed_mutation_rate)
+        child1 = self.add_separator(child1)
+        child2 = self.add_separator(child2)
+        return child1, child2
 
     def sus(self, population, n):
         """
@@ -368,16 +369,15 @@ def genetic_algorithm_solver(instance, population_size, ngen, crossover_rate_dec
     mutation_rate = 1
     crossover_rate = 1
     for n in range(0, ngen):
-        n_parents = round(population_size * (1 - crossover_rate))
-        n_parents = (n_parents if n_parents % 2 == 0 else n_parents - 1)
-        population = prp.generate_next_population(population, n_parents, mutation_rate,
-                                                  speed_mutation_rate, maintain_diversity)
-
         best_chromosome = min(population, key=prp.fitness)
-
         fitness_score = prp.fitness(best_chromosome)
         print("Generation", n, "Best Fitness", fitness_score)
         fitness_scores.append(fitness_score)
+
+        population = prp.generate_next_population(population, mutation_rate,
+                                                  speed_mutation_rate, maintain_diversity,
+                                                  is_elitist=True)
+
         mutation_rate -= mutation_rate_decay
         crossover_rate *= crossover_rate_decay
         end = time.time()
