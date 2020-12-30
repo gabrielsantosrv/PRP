@@ -75,10 +75,6 @@ class PRP_Genetic:
                     child1 = self.add_separator(child1)
                     child2 = self.add_separator(child2)
 
-                    # Take the best among the 4 chromosomes (2 parents and 2 children) involved in the reproduction
-                    # new_chromosomes = sorted([child1, child2, parent1, parent2], key=self.fitness)
-                    # child1 = new_chromosomes[0]
-                    # child2 = new_chromosomes[1]
                     curr_pop = new_children + winner_chromosomes
                     if child1 not in curr_pop and child2 not in curr_pop:
                         is_new = True
@@ -93,6 +89,32 @@ class PRP_Genetic:
             new_children.append(child2)
 
         return new_children + winner_chromosomes
+
+
+    def sus(self, population, n):
+        """
+        Stochastic Universal Sampling.
+        Reference: https://en.wikipedia.org/wiki/Stochastic_universal_sampling
+
+        :param population: population: current population
+        :param n: the number of individuals to keep
+        :return: a list of selected individuals
+        """
+        fitness_scores = [self.fitness(chromosome) for chromosome in population]
+        total_fitness = sum(fitness_scores)
+        point_distance = total_fitness / n
+        start_point = random.uniform(0, point_distance)
+        points = [start_point + i * point_distance for i in range(n)]
+
+        keep = []
+        for p in points:
+            i = 0
+            cumulative_sum = 0
+            while cumulative_sum < p:
+                cumulative_sum += fitness_scores[i]
+                i += 1
+            keep.append(population[i])
+        return keep
 
     def tournament_selection(self, population, n, k=2):
         """
@@ -395,8 +417,9 @@ if __name__ == '__main__':
         start = time.time()
         fitness_scores, best_chromosome = genetic_algorithm_solver(instance, population_size=100, ngen=1000,
                                                                    crossover_rate_decay=0.99, mutation_rate_decay=0.85/1000,
-                                                                   speed_mutation_rate=0.25, maintain_diversity=True)
+                                                                   speed_mutation_rate=0.25, maintain_diversity=False)
         n_routes = sum([1 for item in best_chromosome if item[0] == -1])
+        print(best_chromosome)
         plot_metrics(fitness_scores)
     #     end = time.time()
     #     min_fit = min(fitness_scores)
