@@ -117,7 +117,7 @@ class PRP_Genetic:
         new_population = []
         n_rounds = round(n/k)
         for _ in range(n_rounds):
-            fitness_scores = [self.fitness(chromosome) for chromosome in population]
+            fitness_scores = [1/self.fitness(chromosome) for chromosome in population]
             total_fitness = sum(fitness_scores)
             point_distance = total_fitness / k
             start_point = random.uniform(0, point_distance)
@@ -441,80 +441,83 @@ def plot_metrics(scores, filepath=None):
 if __name__ == '__main__':
     random.seed(42)
 
-    for instance_size in [100, 200]:
-        results = {'time': [], 'result': [], 'fleet size': []}
-        # config a
-        for i in range(1, 21):
-            if i < 10:
-                instance_name = "{}{}".format("UK{}_0".format(instance_size), i)
-            else:
-                instance_name = "{}{}".format("UK{}_".format(instance_size), i)
+    for elitism in [0.15, 0.20]:
+        for k in [5, 50]:
+            for instance_size in [10, 20, 100, 200]:
+                print("==================== Instance {}, elitism {}, k {}".format(instance_size, elitism, k))
+                # results = {'time': [], 'result': [], 'fleet size': []}
+                # # config a
+                # for i in range(1, 21):
+                #     if i < 10:
+                #         instance_name = "{}{}".format("UK{}_0".format(instance_size), i)
+                #     else:
+                #         instance_name = "{}{}".format("UK{}_".format(instance_size), i)
+                #
+                #     instance = read_instance(inst_name=instance_name)
+                #     prp = PRP_Genetic(instance)
+                #     ngen = 100000
+                #     start = time.time()
+                #     fitness_scores, best_chromosome = genetic_algorithm_solver(prp,
+                #                                                                population_size=100,
+                #                                                                ngen=ngen,
+                #                                                                crossover_rate_decay=1,
+                #                                                                mutation_rate_decay=0,
+                #                                                                route_mutation_rate=1 / instance_size,
+                #                                                                min_route_mutation_rate=1 / instance_size,
+                #                                                                speed_mutation_rate=1 / instance_size,
+                #                                                                elitism_rate=elitism,
+                #                                                                maintain_diversity=False,
+                #                                                                selection_method=lambda pop, n: prp.sus(pop, n, k=k))
+                #     n_routes = sum([1 for item in best_chromosome if item[0] == -1])
+                #     print(best_chromosome)
+                #     # plot_metrics(fitness_scores)
+                #
+                #     end = time.time()
+                #     min_fit = min(fitness_scores)
+                #
+                #     results['result'].append(min_fit)
+                #     results['time'].append((end-start))
+                #     results['fleet size'].append(n_routes)
+                #
+                # df = pd.DataFrame(results)
+                # df.to_csv('ga_{}_config_A_{}_SUS_{}_results.csv'.format(instance_size, elitism, k))
 
-            instance = read_instance(inst_name=instance_name)
-            prp = PRP_Genetic(instance)
-            ngen = 100000
-            start = time.time()
-            fitness_scores, best_chromosome = genetic_algorithm_solver(prp,
-                                                                       population_size=100,
-                                                                       ngen=ngen,
-                                                                       crossover_rate_decay=1,
-                                                                       mutation_rate_decay=0,
-                                                                       route_mutation_rate=1 / instance_size,
-                                                                       min_route_mutation_rate=1 / instance_size,
-                                                                       speed_mutation_rate=1 / instance_size,
-                                                                       elitism_rate=0.15,
-                                                                       maintain_diversity=False,
-                                                                       selection_method=prp.tournament_selection)
-            n_routes = sum([1 for item in best_chromosome if item[0] == -1])
-            print(best_chromosome)
-            # plot_metrics(fitness_scores)
+                results = {'time': [], 'result': [], 'fleet size': []}
+                # config b
+                for i in range(1, 11):
+                    if i < 10:
+                        instance_name = "{}{}".format("UK{}_0".format(instance_size), i)
+                    else:
+                        instance_name = "{}{}".format("UK{}_".format(instance_size), i)
 
-            end = time.time()
-            min_fit = min(fitness_scores)
+                    instance = read_instance(inst_name=instance_name)
+                    prp = PRP_Genetic(instance)
+                    ngen = 100000
+                    final_mutation_rate = 1/instance_size
+                    mutation_rate_decay = (1-final_mutation_rate)/ngen
+                    start = time.time()
+                    fitness_scores, best_chromosome = genetic_algorithm_solver(prp,
+                                                                               population_size=100,
+                                                                               ngen=ngen,
+                                                                               crossover_rate_decay=1,
+                                                                               mutation_rate_decay=mutation_rate_decay,
+                                                                               route_mutation_rate=1,
+                                                                               min_route_mutation_rate=1 / instance_size,
+                                                                               speed_mutation_rate=1 / instance_size,
+                                                                               elitism_rate=elitism,
+                                                                               maintain_diversity=False,
+                                                                               selection_method=lambda pop, n: prp.sus(pop, n, k=k))
+                    n_routes = sum([1 for item in best_chromosome if item[0] == -1])
+                    print(best_chromosome)
+                    # plot_metrics(fitness_scores)
 
-            results['result'].append(min_fit)
-            results['time'].append((end-start))
-            results['fleet size'].append(n_routes)
+                    end = time.time()
+                    min_fit = min(fitness_scores)
 
-        df = pd.DataFrame(results)
-        df.to_csv('ga_{}_config_a_results.csv'.format(instance_size))
+                    results['result'].append(min_fit)
+                    results['time'].append((end-start))
+                    results['fleet size'].append(n_routes)
 
-        results = {'time': [], 'result': [], 'fleet size': []}
-        # config b
-        for i in range(1, 21):
-            if i < 10:
-                instance_name = "{}{}".format("UK{}_0".format(instance_size), i)
-            else:
-                instance_name = "{}{}".format("UK{}_".format(instance_size), i)
-
-            instance = read_instance(inst_name=instance_name)
-            prp = PRP_Genetic(instance)
-            ngen = 100000
-            final_mutation_rate = 1/instance_size
-            mutation_rate_decay = (1-final_mutation_rate)/ngen
-            start = time.time()
-            fitness_scores, best_chromosome = genetic_algorithm_solver(prp,
-                                                                       population_size=100,
-                                                                       ngen=ngen,
-                                                                       crossover_rate_decay=1,
-                                                                       mutation_rate_decay=mutation_rate_decay,
-                                                                       route_mutation_rate=1,
-                                                                       min_route_mutation_rate=1 / instance_size,
-                                                                       speed_mutation_rate=1 / instance_size,
-                                                                       elitism_rate=0.15,
-                                                                       maintain_diversity=False,
-                                                                       selection_method=prp.tournament_selection)
-            n_routes = sum([1 for item in best_chromosome if item[0] == -1])
-            print(best_chromosome)
-            # plot_metrics(fitness_scores)
-
-            end = time.time()
-            min_fit = min(fitness_scores)
-
-            results['result'].append(min_fit)
-            results['time'].append((end-start))
-            results['fleet size'].append(n_routes)
-
-        df = pd.DataFrame(results)
-        df.to_csv('ga_{}_config_b_results.csv'.format(instance_size))
+                df = pd.DataFrame(results)
+                df.to_csv('ga_{}_config_B_{}_SUS_{}_results.csv'.format(instance_size, elitism, k))
 
