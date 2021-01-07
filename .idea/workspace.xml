@@ -21,7 +21,6 @@
   <component name="ChangeListManager">
     <list default="true" id="c28d6284-564e-48dc-9afb-786ffdb46b97" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GA.py" beforeDir="false" afterPath="$PROJECT_DIR$/GA.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +40,28 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
-  <component name="RunManager" selected="Python.GA">
+  <component name="RunManager" selected="Python.GA-ttplots">
+    <configuration name="GA-ttplots" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PRP" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/GA-ttplots.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="GA" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="PRP" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -86,6 +106,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.GA-ttplots" />
         <item itemvalue="Python.GA" />
         <item itemvalue="Python.PL" />
       </list>
@@ -119,38 +140,38 @@
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="184" y="112" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1440.900/1440.-216.2560.1080@0.0.1440.900" timestamp="1607462624898" />
-    <state width="2539" height="334" key="GridCell.Tab.0.bottom" timestamp="1609276427370">
+    <state width="2539" height="330" key="GridCell.Tab.0.bottom" timestamp="1609814074323">
       <screen x="1440" y="-180" width="2560" height="1080" />
     </state>
     <state width="2539" height="506" key="GridCell.Tab.0.bottom/0.0.1440.900/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609090939592" />
-    <state width="2539" height="334" key="GridCell.Tab.0.bottom/0.0.1440.900/1440.-180.2560.1080@1440.-180.2560.1080" timestamp="1609276427370" />
+    <state width="2539" height="330" key="GridCell.Tab.0.bottom/0.0.1440.900/1440.-180.2560.1080@1440.-180.2560.1080" timestamp="1609814074323" />
     <state width="1419" height="295" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1609176366372" />
     <state width="1419" height="304" key="GridCell.Tab.0.bottom/0.23.1440.807@0.23.1440.807" timestamp="1607644871208" />
     <state width="2539" height="70" key="GridCell.Tab.0.bottom/0.25.1440.800/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609019222126" />
     <state width="1419" height="241" key="GridCell.Tab.0.bottom/0.25.1440.875/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609018962108" />
-    <state width="2539" height="334" key="GridCell.Tab.0.center" timestamp="1609276427368">
+    <state width="2539" height="330" key="GridCell.Tab.0.center" timestamp="1609814074322">
       <screen x="1440" y="-180" width="2560" height="1080" />
     </state>
     <state width="2539" height="506" key="GridCell.Tab.0.center/0.0.1440.900/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609090939590" />
-    <state width="2539" height="334" key="GridCell.Tab.0.center/0.0.1440.900/1440.-180.2560.1080@1440.-180.2560.1080" timestamp="1609276427368" />
+    <state width="2539" height="330" key="GridCell.Tab.0.center/0.0.1440.900/1440.-180.2560.1080@1440.-180.2560.1080" timestamp="1609814074322" />
     <state width="1419" height="295" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1609176366371" />
     <state width="1419" height="304" key="GridCell.Tab.0.center/0.23.1440.807@0.23.1440.807" timestamp="1607644871207" />
     <state width="2539" height="70" key="GridCell.Tab.0.center/0.25.1440.800/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609019222124" />
     <state width="1419" height="241" key="GridCell.Tab.0.center/0.25.1440.875/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609018962106" />
-    <state width="2539" height="334" key="GridCell.Tab.0.left" timestamp="1609276427367">
+    <state width="2539" height="330" key="GridCell.Tab.0.left" timestamp="1609814074321">
       <screen x="1440" y="-180" width="2560" height="1080" />
     </state>
     <state width="2539" height="506" key="GridCell.Tab.0.left/0.0.1440.900/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609090939589" />
-    <state width="2539" height="334" key="GridCell.Tab.0.left/0.0.1440.900/1440.-180.2560.1080@1440.-180.2560.1080" timestamp="1609276427367" />
+    <state width="2539" height="330" key="GridCell.Tab.0.left/0.0.1440.900/1440.-180.2560.1080@1440.-180.2560.1080" timestamp="1609814074321" />
     <state width="1419" height="295" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1609176366370" />
     <state width="1419" height="304" key="GridCell.Tab.0.left/0.23.1440.807@0.23.1440.807" timestamp="1607644871207" />
     <state width="2539" height="70" key="GridCell.Tab.0.left/0.25.1440.800/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609019222123" />
     <state width="1419" height="241" key="GridCell.Tab.0.left/0.25.1440.875/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609018962105" />
-    <state width="2539" height="334" key="GridCell.Tab.0.right" timestamp="1609276427369">
+    <state width="2539" height="330" key="GridCell.Tab.0.right" timestamp="1609814074322">
       <screen x="1440" y="-180" width="2560" height="1080" />
     </state>
     <state width="2539" height="506" key="GridCell.Tab.0.right/0.0.1440.900/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609090939591" />
-    <state width="2539" height="334" key="GridCell.Tab.0.right/0.0.1440.900/1440.-180.2560.1080@1440.-180.2560.1080" timestamp="1609276427369" />
+    <state width="2539" height="330" key="GridCell.Tab.0.right/0.0.1440.900/1440.-180.2560.1080@1440.-180.2560.1080" timestamp="1609814074322" />
     <state width="1419" height="295" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1609176366372" />
     <state width="1419" height="304" key="GridCell.Tab.0.right/0.23.1440.807@0.23.1440.807" timestamp="1607644871208" />
     <state width="2539" height="70" key="GridCell.Tab.0.right/0.25.1440.800/-500.-1080.2560.1080@-500.-1080.2560.1080" timestamp="1609019222125" />
