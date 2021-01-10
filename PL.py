@@ -32,8 +32,8 @@ def compute_objective(instance:PRProblem, x_vars, z_vars, f_vars, s_vars):
                     sum_z += z_vars[(i, j, r)] / r
                     sum_z2 += z_vars[(i, j, r)] * (r ** 2)
                 objective += const1 * instance.dist[(i, j)] * sum_z
-                objective += const2 * alphas[(i, j)] * instance.dist[(i, j)] * x_vars[(i, j)]
-                objective += const3 * alphas[(i, j)] * instance.dist[(i, j)] * f_vars[(i, j)]
+                objective += const2 * ALPHA * instance.dist[(i, j)] * x_vars[(i, j)]
+                objective += const3 * ALPHA * instance.dist[(i, j)] * f_vars[(i, j)]
                 objective += const4 * instance.dist[(i, j)] * sum_z2
         if i > 0:
             objective += DRIVER_COST * s_vars[i]
@@ -212,7 +212,7 @@ def build_model(instance: PRProblem):
     constraint_19_indicator(model, instance, x_vars, z_vars, y_vars, s_vars)
     constraint_20(model, instance, x_vars, z_vars)
 
-    return model
+    return model, x_vars, z_vars
 
 def genarateRandomAlphaMatrix():
     alphas = {}
@@ -234,27 +234,34 @@ if __name__ == '__main__':
     upper_bounds = []
     times = []
     fleet_sizes = []
+    for n in [100]:
+        for i in range(1, 2):
+            if i < 10:
+                instance_name = "{}{}".format("UK{}_0".format(n), i)
+            else:
+                instance_name = "{}{}".format("UK{}_".format(n), i)
+            print(instance_name)
+            instance = read_instance(inst_name=instance_name)
 
-    for i in range(1, 21):
-        if i < 10:
-            instance_name = "{}{}".format("UK10_0", i)
-        else:
-            instance_name = "{}{}".format("UK10_", i)
+            model, x_vars, z_vars = build_model(instance)
+            model.setParam('TimeLimit', 1800)
+            model.optimize()
+            print('Final Objective: {}'.format(model.objVal))
+            for v in model.getVars():
+                if v.varName == "m":
+                    print('Fleet size: %g' % (v.x))
+                    fleet_sizes.append(v.x)
 
-        instance = read_instance(inst_name=instance_name)
+            print('Route')
+            for edge, v in x_vars.items():
+                if v.X > 0.9:
+                    for r in range(instance.min_speed, instance.max_speed + 1):
+                        if z_vars[(edge[0], edge[1], r)].X > 0.9:
+                            print("{}: {}".format(v.varName, v.X), "velocidade:", r)
 
-        model = build_model(instance)
-        model.setParam('TimeLimit', 1800)
-        model.optimize()
-        print('Final Objective: {}'.format(model.objVal))
-        for v in model.getVars():
-            if v.varName == "m":
-                print('Fleet size: %g' % (v.x))
-                fleet_sizes.append(v.x)
+            lower_bounds.append(model.objBound)
+            upper_bounds.append(model.objVal)
+            times.append(model.runtime)
 
-        lower_bounds.append(model.objBound)
-        upper_bounds.append(model.objVal)
-        times.append(model.runtime)
-
-    filepath = "/Users/lumagabino/Backup/Graduação/MO824/PRP/results.csv"
-    save_results_CSV(lower_bounds, upper_bounds, times, fleet_sizes, filepath)
+        # filepath = "./pl_{}_results.csv".format(n)
+        # save_results_CSV(lower_bounds, upper_bounds, times, fleet_sizes, filepath)
